@@ -7,7 +7,7 @@
 
 GitHub Actions를 통한 CI/CD 파이프라인 자동화, Helm Chart 기반의 Kubernetes 애플리케이션 배포, AWS EFS를 통한 로그 저장소 연동, CloudFormation 기반의 네트워크(VPC) 구성까지 **모든 인프라 및 애플리케이션 레벨 구성을 하나의 리포지토리로 통합**하였습니다.
 
-이 프로젝트는 다음과 같은 환경 또는 목적에 적합합니다:
+이 프로젝트는 다음과 같은 목적으로 구성하였습니다:
 
 - **DevOps 실습** 또는 사내 DevOps 표준 프로세스 구축
 - Kubernetes 및 EKS 학습 및 구조 이해
@@ -119,16 +119,9 @@ eks-petclinic-infra/
 
 ---
 
-## 🙋 문의사항
-
-- Issue를 통해 질문하거나, 개선 사항은 PR로 기여해 주세요.
-
----
-
 ## 🏁 요약
 
 - AWS 인프라(VPC, EKS, EFS)를 GitHub Actions로 자동화 구성
 - Helm을 활용해 Spring PetClinic 앱을 안정적으로 배포
-- 실습 및 PoC에 적합한 자동화 예제 제공
+- 실습 및 PoC에 적합한 자동화 
 
-> 이 문서는 실무자와 입문자 모두를 위한 설명을 포함하며, 전체 배포 과정을 처음부터 끝까지 자동화하는 데 필요한 모든 구성을 담고 있습니다.
