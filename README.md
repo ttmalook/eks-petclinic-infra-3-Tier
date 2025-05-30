@@ -32,7 +32,7 @@ GitHub Actions를 통한 CI/CD 파이프라인 자동화, Helm Chart 기반의 K
 
 ## 🧭 자동화 동작 흐름 요약
 
-![EKS 기반 자동화 다이어그램](https://files.chat.openai.com/file-HjgxSL6Xm1cebNfkcyL9c6)
+![EKS 기반 자동화 다이어그램]([https://files.chat.openai.com/file-HjgxSL6Xm1cebNfkcyL9c6](https://github.com/ttmalook/eks-petclinic-infra-3-Tier/blob/main/ChatGPT%20Image%202025%EB%85%84%205%EC%9B%94%2030%EC%9D%BC%20%EC%98%A4%ED%9B%84%2002_25_34.png?raw=true)
 
 > 위 다이어그램은 GitHub Actions를 통해 실행되는 자동화된 배포 과정을 시각적으로 보여줍니다. 
 > VPC → EKS → EFS → PetClinic 애플리케이션으로 이어지는 단계가 명확하게 구분되며, 각 리소스는 독립적이면서도 상호 연결되어 있습니다. 
