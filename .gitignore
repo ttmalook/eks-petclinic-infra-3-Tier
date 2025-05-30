@@ -1,0 +1,286 @@
+# Byte-compiled / optimized / DLL files
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+__pycache__/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.py[cod]
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*$py.class
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# C extensions
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.so
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Distribution / packaging
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.Python
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+build/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+develop-eggs/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+dist/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+downloads/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+eggs/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.eggs/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+lib/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+lib64/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+parts/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+sdist/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+var/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+wheels/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+share/python-wheels/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.egg-info/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.installed.cfg
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.egg
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+MANIFEST
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.manifest
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.spec
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Installer logs
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+pip-log.txt
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+pip-delete-this-directory.txt
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Unit test / coverage reports
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+htmlcov/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.tox/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.nox/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.coverage
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.coverage.*
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.cache
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+nosetests.xml
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+coverage.xml
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.cover
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.py,cover
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.hypothesis/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.pytest_cache/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+cover/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Translations
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.mo
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.pot
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Django stuff:
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.log
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+local_settings.py
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+db.sqlite3
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+db.sqlite3-journal
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Flask stuff:
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+instance/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.webassets-cache
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Scrapy stuff:
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.scrapy
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Sphinx documentation
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+docs/_build/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# PyBuilder
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.pybuilder/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+target/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Jupyter Notebook
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.ipynb_checkpoints
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# IPython
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+profile_default/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+ipython_config.py
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# UV
+#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#uv.lock
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# poetry
+#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
+#poetry.lock
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.pdm.toml
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.pdm-python
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.pdm-build/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+__pypackages__/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Celery stuff
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+celerybeat-schedule
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+celerybeat.pid
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# SageMath parsed files
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+*.sage.py
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Environments
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.env
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.venv
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+env/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+venv/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+ENV/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+env.bak/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+venv.bak/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Spyder project settings
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.spyderproject
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.spyproject
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Rope project settings
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.ropeproject
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# mkdocs documentation
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+/site
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# mypy
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.mypy_cache/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.dmypy.json
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+dmypy.json
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Pyre type checker
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.pyre/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# pytype static type analyzer
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.pytype/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Cython debug symbols
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+cython_debug/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#.idea/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# Ruff stuff:
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.ruff_cache/
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+
+# PyPI configuration file
+# Git에 커밋되지 않도록 무시할 파일/디렉토리
+.pypirc

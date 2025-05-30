@@ -1,0 +1,249 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Multi-AZ 3-Tier VPC Architecture (Web/WAS/DB/EFS용)
+
+Parameters:
+  VpcCidr:
+    Type: String
+    Default: 10.1.0.0/23
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+# 컨테이너 또는 서비스 포트 정의
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: 3Tier-VPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.0.0/26
+      AvailabilityZone: ap-northeast-2a
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Public-AZ2a
+
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.1.0/26
+      AvailabilityZone: ap-northeast-2c
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Public-AZ2c
+
+  NatEip:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatEip.AllocationId
+      SubnetId: !Ref PublicSubnetA
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachInternetGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicAssocA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicAssocC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetC
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+
+  PrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  # AZ2a
+  PrivateWebA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.0.64/26
+      AvailabilityZone: ap-northeast-2a
+      Tags:
+        - Key: Name
+          Value: Private-Web-AZ2a
+
+  PrivateWASA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.0.128/26
+      AvailabilityZone: ap-northeast-2a
+      Tags:
+        - Key: Name
+          Value: Private-WAS-AZ2a
+
+  PrivateEFSA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.0.192/27    # 변경됨 (/26 → /27)
+      AvailabilityZone: ap-northeast-2a
+      Tags:
+        - Key: Name
+          Value: Private-EFS-AZ2a
+
+  PrivateDBA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.0.224/27
+      AvailabilityZone: ap-northeast-2a
+      Tags:
+        - Key: Name
+          Value: Private-DB-AZ2a
+
+  # AZ2c
+  PrivateWebC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.1.64/26
+      AvailabilityZone: ap-northeast-2c
+      Tags:
+        - Key: Name
+          Value: Private-Web-AZ2c
+
+  PrivateWASC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.1.128/26
+      AvailabilityZone: ap-northeast-2c
+      Tags:
+        - Key: Name
+          Value: Private-WAS-AZ2c
+
+  PrivateEFSC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.1.192/27    # 변경됨 (/26 → /27)
+      AvailabilityZone: ap-northeast-2c
+      Tags:
+        - Key: Name
+          Value: Private-EFS-AZ2c
+
+  PrivateDBC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.1.1.224/27
+      AvailabilityZone: ap-northeast-2c
+      Tags:
+        - Key: Name
+          Value: Private-DB-AZ2c
+
+  # Subnet Associations
+  PrivateAssocWebA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateWebA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateAssocWASA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateWASA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateAssocEFSA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateEFSA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateAssocDBA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateDBA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateAssocWebC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateWebC
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateAssocWASC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateWASC
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateAssocEFSC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateEFSC
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateAssocDBC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateDBC
+      RouteTableId: !Ref PrivateRouteTable
+
+Outputs:
+  VPCId:
+    Value: !Ref VPC
+  PublicSubnetA:
+    Value: !Ref PublicSubnetA
+  PublicSubnetC:
+    Value: !Ref PublicSubnetC
+  PrivateWebA:
+    Value: !Ref PrivateWebA
+  PrivateWASA:
+    Value: !Ref PrivateWASA
+  PrivateDBA:
+    Value: !Ref PrivateDBA
+  PrivateWebC:
+    Value: !Ref PrivateWebC
+  PrivateWASC:
+    Value: !Ref PrivateWASC
+  PrivateDBC:
+    Value: !Ref PrivateDBC

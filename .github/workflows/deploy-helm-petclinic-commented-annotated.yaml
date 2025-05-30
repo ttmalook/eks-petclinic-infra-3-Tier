@@ -1,0 +1,88 @@
+# GitHub Actions Workflow: Helm Chart 기반 PetClinic 앱 자동 배포 with EFS 연동
+# 이 워크플로는 charts/petclinic/ 디렉토리 변경 시 자동 실행되며, 수동 실행도 가능합니다.
+# 주요 작업:
+# - EKS 클러스터 접근 설정
+# - EFS ID 동적으로 조회
+# - Helm Chart 배포 시 EFS volumeHandle 자동 주입
+
+# 이 워크플로의 이름입니다.
+name: Deploy PetClinic via Helm
+
+# 워크플로가 실행될 조건을 정의합니다.
+on:
+  # Helm Chart 변경 시 자동 실행
+# 특정 파일 변경 시 자동 실행되도록 설정합니다.
+  push:
+# 실행을 유발할 파일 경로들을 지정합니다.
+    paths:
+      - 'charts/petclinic/**'
+  # GitHub UI에서 수동 실행 허용
+# GitHub에서 수동으로 실행할 수 있도록 합니다.
+  workflow_dispatch:
+
+# 실행할 작업(job)을 정의합니다.
+jobs:
+  helm-deploy:
+    # GitHub Actions 기본 Linux 환경에서 실행
+# 최신 Ubuntu 환경에서 실행되도록 지정합니다.
+    runs-on: ubuntu-latest
+
+    steps:
+    # 소스코드 체크아웃
+# 이 단계의 이름을 정의합니다.
+    - name: Checkout repository
+# 재사용 가능한 GitHub Action을 지정합니다.
+      uses: actions/checkout@v3
+
+    # AWS 자격 증명 구성 (Secrets에 등록된 값 사용)
+# 이 단계의 이름을 정의합니다.
+    - name: Configure AWS credentials
+# 재사용 가능한 GitHub Action을 지정합니다.
+      uses: aws-actions/configure-aws-credentials@v2
+# 해당 액션에 전달할 매개변수를 정의합니다.
+      with:
+# GitHub Secrets에 저장된 AWS 액세스 키
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+# GitHub Secrets에 저장된 AWS 비밀 키
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-northeast-2
+
+    # kubectl 설치
+# 이 단계의 이름을 정의합니다.
+    - name: Set up kubectl
+# 재사용 가능한 GitHub Action을 지정합니다.
+      uses: azure/setup-kubectl@v3
+# 해당 액션에 전달할 매개변수를 정의합니다.
+      with:
+        version: v1.27.1
+
+    # Helm 설치
+# 이 단계의 이름을 정의합니다.
+    - name: Set up Helm
+# 재사용 가능한 GitHub Action을 지정합니다.
+      uses: azure/setup-helm@v3
+# 해당 액션에 전달할 매개변수를 정의합니다.
+      with:
+        version: v3.12.0
+
+    # EKS 클러스터 kubeconfig 설정
+# 이 단계의 이름을 정의합니다.
+    - name: Configure kubeconfig for EKS
+      run: |
+        aws eks --region ap-northeast-2 update-kubeconfig --name petclinic
+
+    # Helm 배포: EFS ID 조회 후 Helm에 동적 주입
+# 이 단계의 이름을 정의합니다.
+    - name: Deploy PetClinic via Helm with dynamic EFS
+      run: |
+        kubectl create namespace petclinic --dry-run=client -o yaml | kubectl apply -f -
+
+        EFS_ID=$(aws efs describe-file-systems \
+          --query "FileSystems[?contains(Name, 'petclinic')].FileSystemId | [0]" \
+          --region ap-northeast-2 --output text)
+
+        echo "📦 Using EFS volumeHandle: $EFS_ID"
+
+        helm upgrade --install petclinic ./charts/petclinic \
+          -n petclinic \
+          --set storage.volumeHandle=$EFS_ID

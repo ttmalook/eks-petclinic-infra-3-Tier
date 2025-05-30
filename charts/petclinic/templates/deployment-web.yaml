@@ -1,0 +1,43 @@
+# 사용할 Kubernetes API 버전
+apiVersion: apps/v1
+# 생성할 리소스 종류 (Deployment, Service 등)
+kind: Deployment
+# 리소스 이름 및 메타데이터 정의 시작
+metadata:
+# 리소스 이름
+  name: petclinic-web
+# 리소스의 스펙 정의
+spec:
+  replicas: {{ .Values.web.replicas | default 1 }}
+  selector:
+    matchLabels:
+      app: petclinic-web
+  template:
+# 리소스 이름 및 메타데이터 정의 시작
+    metadata:
+# 라벨 정의
+      labels:
+        app: petclinic-web
+# 리소스의 스펙 정의
+    spec:
+# 파드에 포함될 컨테이너 목록
+      containers:
+        - name: web
+# 컨테이너에서 사용할 도커 이미지
+          image: {{ .Values.web.image }}
+# 컨테이너 또는 서비스 포트 정의
+          ports:
+            - containerPort: {{ .Values.web.port }}
+# 컨테이너에 마운트할 볼륨 정보
+          volumeMounts:
+            - name: web-config
+              mountPath: /usr/local/apache2/conf/httpd.conf
+              subPath: httpd.conf
+              readOnly: true
+# 파드에 정의된 볼륨 정보
+      volumes:
+        - name: web-config
+# ConfigMap으로부터 설정 주입
+          configMap:
+# 리소스 이름
+            name: webserver-config

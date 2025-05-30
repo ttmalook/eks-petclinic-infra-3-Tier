@@ -1,0 +1,72 @@
+# 사용할 Kubernetes API 버전
+apiVersion: apps/v1  
+# 생성할 리소스 종류 (Deployment, Service 등)
+kind: Deployment
+# 리소스 이름 및 메타데이터 정의 시작
+metadata:
+# 리소스 이름
+  name: petclinic-was
+# 리소스의 스펙 정의
+spec:
+  replicas: {{ .Values.was.replicas }}
+  selector:
+    matchLabels:
+      app: petclinic-was
+  template:
+# 리소스 이름 및 메타데이터 정의 시작
+    metadata:
+# 라벨 정의
+      labels:
+        app: petclinic-was
+# 리소스의 스펙 정의
+    spec:
+# 파드에 포함될 컨테이너 목록
+      containers:
+        - name: petclinic
+# 컨테이너에서 사용할 도커 이미지
+          image: {{ .Values.was.image }}
+# 컨테이너 또는 서비스 포트 정의
+          ports:
+            - containerPort: {{ .Values.was.port }}
+          env:
+            - name: DB_HOST
+              value: "{{ .Values.was.env.DB_HOST }}"
+            - name: DB_PORT
+              value: "{{ .Values.was.env.DB_PORT }}"
+            - name: DB_NAME
+              value: "{{ .Values.was.env.DB_NAME }}"
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+# 리소스 이름
+                  name: petclinic-db-secret
+                  key: db-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+# 리소스 이름
+                  name: petclinic-db-secret
+                  key: db-password
+            - name: JAVA_OPTS
+              value: "-Dspring.config.location=file:/app/config/"
+# 컨테이너에 마운트할 볼륨 정보
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            {{- if .Values.was.efsMountEnabled }}
+            - name: efs-logs
+              mountPath: /app/logs
+            {{- end }}
+# 파드에 정의된 볼륨 정보
+      volumes:
+        - name: config-volume
+# ConfigMap으로부터 설정 주입
+          configMap:
+# 리소스 이름
+            name: petclinic-config
+        {{- if .Values.was.efsMountEnabled }}
+        - name: efs-logs
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-efs-pvc
+        {{- end }}

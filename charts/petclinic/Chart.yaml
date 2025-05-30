@@ -1,0 +1,13 @@
+# Chart.yaml - Helm 차트의 메타 정보를 정의하는 필수 파일입니다.
+# Helm CLI가 이 파일을 기반으로 chart 이름, 버전, 애플리케이션 버전 등을 판단합니다.
+
+# Helm 차트 파일 형식 버전
+apiVersion: v2                     # Helm 차트의 API 버전 (v2는 Helm 3 이상에서 사용)
+# 차트 이름
+name: petclinic                   # 이 차트의 이름 (디렉토리 이름과 일치하는 것이 일반적)
+description: A Helm chart for deploying Spring PetClinic with EFS support
+type: application                 # 애플리케이션 타입 (library가 아닌 경우 application)
+# 차트 버전 (패키징용)
+version: 0.1.0                    # 차트 버전 - 배포용 버전 관리용
+# 실제 애플리케이션 버전
+appVersion: "1.0"                 # 실제 배포되는 애플리케이션 버전 (예: PetClinic 1.0)

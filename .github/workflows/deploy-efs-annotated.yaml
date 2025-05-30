@@ -1,0 +1,192 @@
+# 이 워크플로우는 GitHub Actions를 통해 EFS를 자동으로 생성하고
+# 모든 AZ에 Mount Target을 만든 뒤 Helm Chart로 WAS에만 EFS를 마운트하도록 Petclinic을 배포합니다.
+
+# 이 워크플로의 이름입니다.
+name: deploy-efs
+
+# 워크플로가 실행될 조건을 정의합니다.
+on:
+# GitHub에서 수동으로 실행할 수 있도록 합니다.
+  workflow_dispatch:
+# 특정 파일 변경 시 자동 실행되도록 설정합니다.
+  push:
+# 실행을 유발할 파일 경로들을 지정합니다.
+    paths:
+      - 'charts/petclinic/**'
+      - '.github/workflows/deploy-efs.yaml'
+
+# 실행할 작업(job)을 정의합니다.
+jobs:
+  efs-helm-setup:
+# 최신 Ubuntu 환경에서 실행되도록 지정합니다.
+    runs-on: ubuntu-latest
+
+# 작업에 필요한 환경 변수를 정의합니다.
+    env:
+# 사용할 AWS 리전을 지정합니다.
+      AWS_REGION: ap-northeast-2
+# 사용할 EKS 클러스터 이름입니다.
+      EKS_CLUSTER_NAME: petclinic
+# 사용할 VPC CloudFormation 스택 이름입니다.
+      VPC_STACK_NAME: vpc-3tier-stack
+
+    steps:
+# 이 단계의 이름을 정의합니다.
+      - name: Checkout repository
+# 재사용 가능한 GitHub Action을 지정합니다.
+        uses: actions/checkout@v3
+
+# 이 단계의 이름을 정의합니다.
+      - name: Configure AWS credentials
+# 재사용 가능한 GitHub Action을 지정합니다.
+        uses: aws-actions/configure-aws-credentials@v2
+# 해당 액션에 전달할 매개변수를 정의합니다.
+        with:
+# GitHub Secrets에 저장된 AWS 액세스 키
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+# GitHub Secrets에 저장된 AWS 비밀 키
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+# 사용할 AWS 리전을 지정합니다.
+          aws-region: ${{ env.AWS_REGION }}
+
+# 이 단계의 이름을 정의합니다.
+      - name: Set up kubectl
+# 재사용 가능한 GitHub Action을 지정합니다.
+        uses: azure/setup-kubectl@v3
+
+# 이 단계의 이름을 정의합니다.
+      - name: Install Helm
+# 재사용 가능한 GitHub Action을 지정합니다.
+        uses: azure/setup-helm@v3
+
+# 이 단계의 이름을 정의합니다.
+      - name: Configure kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig \
+# 사용할 AWS 리전을 지정합니다.
+            --region $AWS_REGION \
+# 사용할 EKS 클러스터 이름입니다.
+            --name $EKS_CLUSTER_NAME
+
+# 이 단계의 이름을 정의합니다.
+      - name: Get VPC subnet and default SG
+        id: vpc
+        run: |
+          subnet_id=$(aws cloudformation describe-stacks \
+# 사용할 VPC CloudFormation 스택 이름입니다.
+            --stack-name $VPC_STACK_NAME \
+            --query "Stacks[0].Outputs[?OutputKey=='PublicSubnetA'].OutputValue" \
+            --output text)
+          vpc_id=$(aws cloudformation describe-stacks \
+# 사용할 VPC CloudFormation 스택 이름입니다.
+            --stack-name $VPC_STACK_NAME \
+            --query "Stacks[0].Outputs[?OutputKey=='VPCId'].OutputValue" \
+            --output text)
+          sg_id=$(aws ec2 describe-security-groups \
+# 사용할 AWS 리전을 지정합니다.
+            --region $AWS_REGION \
+            --filters Name=vpc-id,Values=$vpc_id Name=group-name,Values=default \
+            --query "SecurityGroups[0].GroupId" \
+            --output text)
+          echo "subnet_id=$subnet_id" >> $GITHUB_OUTPUT
+          echo "vpc_id=$vpc_id" >> $GITHUB_OUTPUT
+          echo "sg_id=$sg_id" >> $GITHUB_OUTPUT
+
+# 이 단계의 이름을 정의합니다.
+      - name: Create EFS File System
+        id: efs
+        run: |
+          fs_id=$(aws efs create-file-system \
+# 사용할 AWS 리전을 지정합니다.
+            --region $AWS_REGION \
+            --tags Key=Name,Value=petclinic-efs \
+            --query "FileSystemId" \
+            --output text)
+          echo "fs_id=$fs_id" >> $GITHUB_OUTPUT
+          echo "EFS FileSystem ID: $fs_id"
+
+# 이 단계의 이름을 정의합니다.
+      - name: Wait for EFS to be available
+        run: |
+          fs_id=${{ steps.efs.outputs.fs_id }}
+          while true; do
+            status=$(aws efs describe-file-systems \
+              --file-system-id $fs_id \
+              --query "FileSystems[0].LifeCycleState" \
+              --output text)
+            echo "Current EFS state: $status"
+            if [ "$status" == "available" ]; then
+              echo "✅ EFS is now available."
+              break
+            fi
+            echo "⏳ Waiting for EFS to become available..."
+            sleep 5
+          done
+
+# 이 단계의 이름을 정의합니다.
+      - name: Create EFS Mount Targets for All AZs
+        run: |
+          fs_id=${{ steps.efs.outputs.fs_id }}
+          sg_id=${{ steps.vpc.outputs.sg_id }}
+          vpc_id=${{ steps.vpc.outputs.vpc_id }}
+
+          azs=$(aws ec2 describe-availability-zones \
+# 사용할 AWS 리전을 지정합니다.
+            --region $AWS_REGION \
+            --query "AvailabilityZones[].ZoneName" \
+            --output text)
+
+          for az in $azs; do
+            subnet_id=$(aws ec2 describe-subnets \
+# 사용할 AWS 리전을 지정합니다.
+              --region $AWS_REGION \
+              --filters "Name=availability-zone,Values=$az" "Name=vpc-id,Values=$vpc_id" \
+              --query "Subnets[0].SubnetId" \
+              --output text)
+
+            if [ "$subnet_id" != "None" ] && [ "$subnet_id" != "null" ]; then
+              echo "➡️ Creating Mount Target in $az ($subnet_id)"
+              aws efs create-mount-target \
+                --file-system-id $fs_id \
+                --subnet-id $subnet_id \
+                --security-groups $sg_id || true
+            else
+              echo "⚠️ No subnet found for $az in VPC $vpc_id"
+            fi
+          done
+
+# 이 단계의 이름을 정의합니다.
+      - name: Wait for all EFS Mount Targets to be available
+        run: |
+          fs_id=${{ steps.efs.outputs.fs_id }}
+          while true; do
+            states=$(aws efs describe-mount-targets \
+              --file-system-id $fs_id \
+              --query "MountTargets[].LifeCycleState" \
+              --output text)
+
+            echo "Current Mount Target states: $states"
+
+            all_ready=true
+            for state in $states; do
+              if [ "$state" != "available" ]; then
+                all_ready=false
+                break
+              fi
+            done
+
+            if [ "$all_ready" = true ]; then
+              echo "✅ All Mount Targets are available."
+              break
+            fi
+
+            echo "⏳ Waiting for all Mount Targets to become available..."
+            sleep 5
+          done
+
+# 이 단계의 이름을 정의합니다.
+      - name: Deploy EFS via Helm (charts/petclinic)
+        run: |
+          helm upgrade --install petclinic ./charts/petclinic \
+            --set storage.volumeHandle=${{ steps.efs.outputs.fs_id }} \
+            -n petclinic

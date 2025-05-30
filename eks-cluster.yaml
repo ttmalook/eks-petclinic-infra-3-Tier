@@ -1,0 +1,26 @@
+# 사용할 Kubernetes API 버전
+apiVersion: eksctl.io/v1alpha5
+# 생성할 리소스 종류 (Deployment, Service 등)
+kind: ClusterConfig
+
+# 리소스 이름 및 메타데이터 정의 시작
+metadata:
+# 리소스 이름
+  name: petclinic-cluster
+  region: ap-northeast-2
+
+vpc:
+  id: vpc-0b3281ecfd168812f
+  subnets:
+    private:
+      ap-northeast-2a:
+        id: subnet-0a716ca907b9a4024
+      ap-northeast-2c:
+        id: subnet-0f6f8d1f57f19e4e8
+
+managedNodeGroups:
+  - name: petclinic-ng
+    instanceType: t3.medium
+    desiredCapacity: 2
+    privateNetworking: true
+    volumeSize: 30

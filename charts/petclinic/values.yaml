@@ -1,0 +1,64 @@
+# Web 서버 설정 
+web:
+# 사용할 컨테이너 이미지
+  image: httpd:2.4
+  port: 80
+# 디플로이먼트에 사용할 파드 복제 수
+  replicas: 2
+# 해당 구성에서 EFS를 마운트할지 여부
+  efsMountEnabled: false  # 웹은 EFS 미사용
+# 서비스 타입 정의 (ClusterIP, LoadBalancer 등)
+  service:
+    type: LoadBalancer
+
+# WAS 설정
+was:
+# 사용할 컨테이너 이미지
+  image: ttmalook/petclinic_btc:latest
+  port: 8080
+# 디플로이먼트에 사용할 파드 복제 수
+  replicas: 2
+# 해당 구성에서 EFS를 마운트할지 여부
+  efsMountEnabled: true  # 와스는 EFS 사용
+# 서비스 타입 정의 (ClusterIP, LoadBalancer 등)
+  service:
+    type: ClusterIP
+# 환경 변수 정의 (DB 정보, 포트 등)
+  env:
+    DB_HOST: "database-1.cluster-czgliwfs2orh.ap-northeast-2.rds.amazonaws.com"
+    DB_PORT: "3306"
+    DB_NAME: "petclinic"
+    DB_USERNAME: "admin"
+    SERVER_PORT: "8080"
+    # DB_PASSWORD는 보안상 Secret으로 관리되며 values.yaml에는 포함하지 않음
+
+# EFS 볼륨 설정
+# PVC 볼륨 관련 설정
+storage:
+  volumeHandle: fs-03aa1661f344a73d0  # 실제 EFS 파일시스템 ID
+  accessModes:
+    - ReadWriteMany
+  size: 5Gi
+  storageClassName: efs-sc
+
+# PVC 설정
+persistence:
+  enabled: true
+  existingClaim: petclinic-efs-pvc  # WAS에서 사용할 PVC 이름
+
+# ConfigMap 설정 (application.properties 외부 주입용)
+config:
+  applicationProperties: |
+    spring.datasource.url=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    spring.datasource.username=${DB_USERNAME}
+    spring.datasource.password=${DB_PASSWORD}
+    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+    spring.jpa.hibernate.ddl-auto=none
+    spring.jpa.show-sql=true
+    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+    server.port=${SERVER_PORT:8080}
+
+# DB 비밀번호는 Secret 리소스로 따로 생성 필요 (예: petclinic-db-secret)
+secret:
+  name: petclinic-db-secret
+  key: db-password

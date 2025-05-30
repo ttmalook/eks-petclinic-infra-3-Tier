@@ -1,0 +1,120 @@
+# 이 워크플로의 이름입니다.
+name: Create EKS Cluster
+
+# ============================================================
+# GitHub Actions Workflow: EKS 클러스터 자동 생성
+# ------------------------------------------------------------
+# 이 워크플로는 다음 단계를 자동으로 수행합니다.
+# 1. CloudFormation 스택(vpc-3tier-stack)의 Output에서 VPC/Subnet ID 추출
+# 2. eks-cluster.yaml 파일을 동적으로 생성
+# 3. eksctl로 EKS 클러스터 생성
+# ============================================================
+
+# 워크플로가 실행될 조건을 정의합니다.
+on:
+  workflow_dispatch:  # 수동 실행 허용
+# 특정 파일 변경 시 자동 실행되도록 설정합니다.
+  push:
+# 실행을 유발할 파일 경로들을 지정합니다.
+    paths:
+      - .github/workflows/create-eks.yaml  # 워크플로 수정 시 자동 실행
+
+# 실행할 작업(job)을 정의합니다.
+jobs:
+  eks-create:
+# 최신 Ubuntu 환경에서 실행되도록 지정합니다.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: GitHub 저장소 코드 체크아웃
+# 이 단계의 이름을 정의합니다.
+      - name: Checkout
+# 재사용 가능한 GitHub Action을 지정합니다.
+        uses: actions/checkout@v3
+
+      # Step 2: AWS 자격 증명 구성 (Secrets에서 가져온 키 사용)
+# 이 단계의 이름을 정의합니다.
+      - name: Configure AWS Credentials
+# 재사용 가능한 GitHub Action을 지정합니다.
+        uses: aws-actions/configure-aws-credentials@v2
+# 해당 액션에 전달할 매개변수를 정의합니다.
+        with:
+# GitHub Secrets에 저장된 AWS 액세스 키
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+# GitHub Secrets에 저장된 AWS 비밀 키
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # Step 3: CloudFormation Outputs에서 VPC 및 Subnet ID 추출
+      # - 스택 이름은 vpc-3tier-stack
+      # - OutputKey는 VPCId, PrivateWASA, PrivateWASC 기준
+# 이 단계의 이름을 정의합니다.
+      - name: Extract CloudFormation Outputs
+        id: extract
+        run: |
+          set -e
+          STACK_NAME="vpc-3tier-stack"
+
+          # 스택 존재 여부 확인
+          if ! aws cloudformation describe-stacks --stack-name "$STACK_NAME" > /dev/null 2>&1; then
+            echo "❌ Stack '$STACK_NAME' does not exist. Please check the name."
+            exit 1
+          fi
+
+          # Outputs에서 ID 추출
+          VPC_ID=$(aws cloudformation describe-stacks             --stack-name "$STACK_NAME"             --query "Stacks[0].Outputs[?OutputKey=='VPCId'].OutputValue"             --output text)
+
+          SUBNET_A=$(aws cloudformation describe-stacks             --stack-name "$STACK_NAME"             --query "Stacks[0].Outputs[?OutputKey=='PrivateWASA'].OutputValue"             --output text)
+
+          SUBNET_C=$(aws cloudformation describe-stacks             --stack-name "$STACK_NAME"             --query "Stacks[0].Outputs[?OutputKey=='PrivateWASC'].OutputValue"             --output text)
+
+          echo "✅ VPC_ID=$VPC_ID"
+          echo "✅ SUBNET_A=$SUBNET_A"
+          echo "✅ SUBNET_C=$SUBNET_C"
+
+          # 다음 단계에서 사용할 환경 변수로 등록
+          echo "VPC_ID=$VPC_ID" >> $GITHUB_ENV
+          echo "SUBNET_A=$SUBNET_A" >> $GITHUB_ENV
+          echo "SUBNET_C=$SUBNET_C" >> $GITHUB_ENV
+
+      # Step 4: eksctl CLI 설치
+# 이 단계의 이름을 정의합니다.
+      - name: Install eksctl
+        run: |
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/eksctl /usr/local/bin
+
+      # Step 5: eksctl 클러스터 구성 파일 생성 (VPC/Subnet ID 포함)
+# 이 단계의 이름을 정의합니다.
+      - name: Generate eks-cluster.yaml
+        run: |
+          cat > eks-cluster.yaml <<EOF
+          apiVersion: eksctl.io/v1alpha5
+          kind: ClusterConfig
+
+          metadata:
+# 이 워크플로의 이름입니다.
+            name: petclinic
+            region: ap-northeast-2
+
+          vpc:
+            id: $VPC_ID
+            subnets:
+              private:
+                ap-northeast-2a:
+                  id: $SUBNET_A
+                ap-northeast-2c:
+                  id: $SUBNET_C
+
+          nodeGroups:
+# 이 단계의 이름을 정의합니다.
+            - name: ng-petclinic
+              instanceType: t3.medium
+              desiredCapacity: 2
+              privateNetworking: true
+          EOF
+
+      # Step 6: eksctl을 사용하여 클러스터 생성
+# 이 단계의 이름을 정의합니다.
+      - name: Create EKS Cluster
+        run: eksctl create cluster -f eks-cluster.yaml

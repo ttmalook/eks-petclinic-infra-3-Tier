@@ -1,0 +1,33 @@
+# 사용할 Kubernetes API 버전
+apiVersion: networking.k8s.io/v1
+# 생성할 리소스 종류 (Deployment, Service 등)
+kind: Ingress
+# 리소스 이름 및 메타데이터 정의 시작
+metadata:
+# 리소스 이름
+  name: petclinic-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing  # 외부 노출용 ALB 사용
+# 리소스의 스펙 정의
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /web  # 웹 서비스 접근 경로
+            pathType: Prefix
+            backend:
+              service:
+# 리소스 이름
+                name: petclinic-web
+# 컨테이너 또는 서비스 포트 정의
+                port:
+                  number: 80
+          - path: /was  # WAS 서비스 접근 경로
+            pathType: Prefix
+            backend:
+              service:
+# 리소스 이름
+                name: petclinic-was
+# 컨테이너 또는 서비스 포트 정의
+                port:
+                  number: 8080
